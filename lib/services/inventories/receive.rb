@@ -37,7 +37,9 @@ module Services
       end
 
       def check_inventory_health
-        return suggest_buy if low_data
+        return suggest_exchange if low_data && stores_with_inventory.any?
+        
+        suggest_buy if low_data
       end
 
       def suggest_buy
@@ -45,19 +47,45 @@ module Services
       end
 
       def low_data
-        inventory_registry.qnty <= inventory_config.min_safe_qnty
+        inventory_registry.qnty <= store_inventory_config.min_safe_qnty
       end
 
       def buy_data
         "\n
-          Store: #{@store.name} \n
-          Model: #{@shoe_model.name}\n
-          Suggested Qnty: #{inventory_config.min_safe_qnty - inventory_registry.qnty}
+          Store: #{@store.name} 
+          Model: #{@shoe_model.name}
+          Suggested Qnty: #{store_inventory_config.min_safe_qnty - inventory_registry.qnty}
         "
       end
 
-      def inventory_config
-        @inventory_config ||=  InventoryConfig.find_by(store_id: @store.id, shoe_model_id: @shoe_model.id)
+      def store_inventory_config
+        @store_inventory_config ||= InventoryConfig.find_by(store_id: @store.id, shoe_model_id: @shoe_model.id)
+      end
+
+      def suggest_exchange
+        puts "EXCHANGE ENTRIES FOR: #{exchange_data}".yellow
+      end
+
+      def exchange_data
+        "\n
+          Destination Store: #{@store.name} 
+          Model: #{@shoe_model.name}
+          Suggested Qnty: #{store_inventory_config.min_safe_qnty - inventory_registry.qnty}
+          Available Origin Stores: #{stores_with_inventory}
+        "
+      end
+
+      def stores_with_inventory
+        InventoryConfig
+          .joins(store: :inventories)
+            .where(
+              shoe_model: @shoe_model,
+              inventories: {
+                shoe_model: @shoe_model
+              }
+            )
+            .where('inventories.qnty > inventory_configs.max_safe_qnty')
+            .pluck(:name).reject{ |name| name == @store.name }
       end
     end
   end
