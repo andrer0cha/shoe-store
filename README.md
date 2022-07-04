@@ -1,5 +1,18 @@
 # Shoe Store
 
+## Requirements
+```
+Bundler version 2.3.17
+ruby 3.1.2p20
+```
+
+## Instructions
+1. Run `bundle install` in the root folder
+2. Run `rake setup` to create and seed the database
+3. Run `chmod +x ./inventory.rb` to make the WebSocket server an executable file
+4. Run `rake run` to start listening and handling the incoming orders
+
+---
 ## Synopsis
 
 Aldo Shoes is having a huge flash sale online. You provide support to the inventory department. They want to react real-time to various inventory problems as they arise.

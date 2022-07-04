@@ -15,8 +15,8 @@ task :setup do
 end
 
 task :run do
+  ruby 'lib/connect.rb'
 end
 
 task :test do
-  ruby 'test/shoe_store_test.rb'
 end
