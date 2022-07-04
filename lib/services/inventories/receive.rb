@@ -21,11 +21,29 @@ module Services
       end
 
       def call
+        return avoid_impossible_order if impossible_order
+
         update_inventory_registry
         check_inventory_health
       end
 
       private
+
+      def avoid_impossible_order
+        puts "IMPOSSIBLE TO FILL ORDER FOR: #{impossible_order_data}".red
+      end
+
+      def impossible_order_data
+        "\n
+          Store: #{@store.name} 
+          Model: #{@shoe_model.name}
+          Qnty: #{@qnty}
+        "
+      end
+
+      def impossible_order
+        inventory_registry.qnty < @qnty
+      end
 
       def update_inventory_registry
         new_qty = inventory_registry.qnty - @qnty
@@ -43,7 +61,7 @@ module Services
       end
 
       def suggest_buy
-        puts "BUY MORE ENTRIES FOR: #{buy_data}".red
+        puts "BUY MORE ENTRIES FOR: #{buy_data}".yellow
       end
 
       def low_data
@@ -54,8 +72,12 @@ module Services
         "\n
           Store: #{@store.name} 
           Model: #{@shoe_model.name}
-          Suggested Qnty: #{store_inventory_config.min_safe_qnty - inventory_registry.qnty}
+          Suggested Qnty: #{suggested_qnty}
         "
+      end
+
+      def suggested_qnty
+        store_inventory_config.min_safe_qnty - inventory_registry.qnty
       end
 
       def store_inventory_config
@@ -63,14 +85,14 @@ module Services
       end
 
       def suggest_exchange
-        puts "EXCHANGE ENTRIES FOR: #{exchange_data}".yellow
+        puts "EXCHANGE ENTRIES FOR: #{exchange_data}".green
       end
 
       def exchange_data
         "\n
           Destination Store: #{@store.name} 
           Model: #{@shoe_model.name}
-          Suggested Qnty: #{store_inventory_config.min_safe_qnty - inventory_registry.qnty}
+          Suggested Qnty: #{suggested_qnty}
           Available Origin Stores: #{stores_with_inventory}
         "
       end

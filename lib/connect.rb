@@ -17,7 +17,7 @@ EM.run {
   end
 
   ws.on :message do |event|
-    puts [:message, event.data]
+    puts [:new_order, event.data]
     Services::Inventories::Receive.new(JSON.parse(event.data)).call
   end
 
